@@ -15,7 +15,7 @@ class VersionTag:
 	def __init__(self, projPath):
 		self.projPath = projPath
 		if not self.isValidProjPath():
-			print('Path in not valid')
+			print('Path in not valid or doesn\'n contain xcode project')
 			sys.exit(0)
 
 	def isValidProjPath(self):
@@ -49,10 +49,14 @@ class VersionTag:
 		plistlib.writePlist(plistObj, self.infoPlistPath())
 
 	def setTag(self, tag):
-		pass
+		pl = self.plist()
+		pl['CFBundleShortVersionString'] = tag
+		self.savePlist(pl)
 
 	def setBuild(self, build):
-		pass
+		pl = self.plist()
+		pl['CFBundleVersion'] = build
+		self.savePlist(pl)
 
 	def incrementBuild(self):
 		pl = self.plist()

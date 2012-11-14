@@ -9,6 +9,7 @@ import codecs
 import re
 import sys
 import plistlib
+import datetime
 
 
 class VersionTag:
@@ -45,7 +46,7 @@ class VersionTag:
 		return plistlib.readPlist(self.infoPlistPath())
 
 	def savePlist(self, plistObj):
-		# TODO: change date
+		plistObj['AFBuildDate'] = datetime
 		plistlib.writePlist(plistObj, self.infoPlistPath())
 
 	def setTag(self, tag):
@@ -68,6 +69,8 @@ class VersionTag:
 	def readCurrentVersion(self):
 		pl = self.plist()
 		print('Current build version: %s (%s)' % (pl['CFBundleShortVersionString'], pl['CFBundleVersion']))
+		if pl['AFBuildDate']:
+			print('Build date: %s' % (pl['AFBuildDate']))
 
 
 
@@ -78,7 +81,7 @@ def parseArgs():
 	parser.add_argument('-t', '--tag', dest='tag', help='New human version label')
 	parser.add_argument('-b', '--build', dest='build', help='New build number')
 	parser.add_argument('-ib', '--incrementBuild', dest='incrementBuild', action='store_true', default=False, help='Increase by one step build number')
-	parser.add_argument('projPath', help='Path to .xcodeproj file')
+	parser.add_argument('projPath', help='Path to folder where .xcodeproj file is located')
 	return parser.parse_args()
 
 def changeVersion(args):

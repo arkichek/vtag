@@ -29,7 +29,7 @@ class VersionTag:
 			match = re.search('(.+\.xcodeproj)', aName)
 			if match:
 				return os.path.join(self.projPath, match.group(1)) 
-		return None
+		raise Exception('Please cpecify corrent path to xcodeproj folder')
 
 	def pbxprojPath(self):
 		return os.path.join(self.xcodeprojPath(), 'project.pbxproj')	
@@ -70,7 +70,7 @@ class VersionTag:
 	def readCurrentVersion(self):
 		pl = self.plist()
 		print('Current build version: %s (%s)' % (pl['CFBundleShortVersionString'], pl['CFBundleVersion']))
-		if pl['AFBuildDate']:
+		if 'AFBuildDate' in pl.keys():
 			print('Build date: %s' % (pl['AFBuildDate']))
 
 

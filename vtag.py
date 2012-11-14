@@ -9,7 +9,7 @@ import codecs
 import re
 import sys
 import plistlib
-import datetime
+from datetime import *
 
 
 class VersionTag:
@@ -46,7 +46,8 @@ class VersionTag:
 		return plistlib.readPlist(self.infoPlistPath())
 
 	def savePlist(self, plistObj):
-		plistObj['AFBuildDate'] = datetime
+		now = datetime.now()
+		plistObj['AFBuildDate'] = now.strftime("%Y-%m-%d %H:%M:%S")
 		plistlib.writePlist(plistObj, self.infoPlistPath())
 
 	def setTag(self, tag):

@@ -64,10 +64,13 @@ class VersionTag:
 
 	def incrementBuild(self):
 		pl = self.plist()
-		nbn = eval('%s + 1' % (pl['CFBundleVersion']))
-		pl['CFBundleVersion'] = str(nbn)
-		print('New build number is %s' % (pl['CFBundleVersion']))
+		b = float(self.lastBuild())
+		b = b + 1
+		bstr = '%.0f' % (b)
+		pl['CFBundleVersion'] = bstr
 		self.savePlist(pl)
+		print('New build number is %s' % (bstr))
+		
 
 	def readCurrentVersion(self):
 		print('Current build version: %s (%s)' % (self.lastTag(), self.lastBuild()))

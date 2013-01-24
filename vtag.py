@@ -168,25 +168,22 @@ def parseArgs():
 
 def changeVersion(args):
 	vtag = VersionTag(args.projPath)
-	changelog = Changelog(vtag)
 	# print current version
 	if args.read:
 		vtag.readCurrentVersion()
 	# new tag
 	if args.tag:
 		vtag.setTag(args.tag)
-		if args.updateChangelog:
-			changelog.updateLog()
 	# new build number
 	if args.build:
 		vtag.setBuild(args.build)
-		if args.updateChangelog:
-			changelog.updateLog()
 	# increment build number
 	if args.incrementBuild:
 		vtag.incrementBuild()
-		if args.updateChangelog:
-			changelog.updateLog()
+	# show vi editor for release note
+	if args.updateChangelog:
+		changelog = Changelog(vtag)
+		changelog.updateLog()
 
 if __name__ == '__main__':
 	args = parseArgs()

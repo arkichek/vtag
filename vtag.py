@@ -68,10 +68,33 @@ class VersionTag:
 		self.savePlist(pl)
 
 	def readCurrentVersion(self):
+		print('Current build version: %s (%s)' % (self.lastTag(), self.lastBuild()))
+		buildDate = self.lastBuildDate()
+		if buildDate:
+			print('Build date: %s' % (buildDate))
+
+	def lastTag(self):
 		pl = self.plist()
-		print('Current build version: %s (%s)' % (pl['CFBundleShortVersionString'], pl['CFBundleVersion']))
+		return pl['CFBundleShortVersionString']
+
+	def lastBuild(self):
+		pl = self.plist()
+		return pl['CFBundleVersion']
+
+	def lastBuildDate(self):
+		result = None
+		pl = self.plist()
 		if 'AFBuildDate' in pl.keys():
-			print('Build date: %s' % (pl['AFBuildDate']))
+			result = pl['AFBuildDate']
+		return result
+
+
+class Changelog:
+	def __init__(self, vtag):
+		self.vtag = vtag
+
+	def updateLog(self):
+		pass
 
 
 
@@ -87,18 +110,22 @@ def parseArgs():
 
 def changeVersion(args):
 	vtag = VersionTag(args.projPath)
+	changelog = Changelog(vtag)
 	# print current version
 	if args.read:
 		vtag.readCurrentVersion()
 	# new tag
 	if args.tag:
 		vtag.setTag(args.tag)
+		changelog.updateLog()
 	# new build number
 	if args.build:
 		vtag.setBuild(args.build)
+		changelog.updateLog()
 	# increment build number
 	if args.incrementBuild:
 		vtag.incrementBuild()
+		changelog.updateLog()
 
 if __name__ == '__main__':
 	args = parseArgs()

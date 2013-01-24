@@ -9,6 +9,8 @@ import codecs
 import re
 import sys
 import plistlib
+import tempfile
+import subprocess
 from datetime import *
 
 
@@ -94,17 +96,70 @@ class Changelog:
 		self.vtag = vtag
 
 	def updateLog(self):
-		pass
+		textToAdd = self.finalizedBlock(self.textFromDialog())
+		if textToAdd:
+			logLines = self.logFileLines()
+			logLines.insert(self.insertIndex(logLines), textToAdd)
+			if self.writeLogLinesToFile(logLines):
+				print('Changelog has been updated')
+			else:
+				print('Failed to update chagelog file')
+
+	def insertIndex(self, logLines):
+		result = 0
+		if logLines:
+			for i in range(len(logLines)):
+				aLine = logLines[i]
+				match = re.search('### Version', aLine)
+				if match:
+					result = i
+					break
+		return result
+
+	def logFileLines(self):
+		with codecs.open(self.logFilePath(), 'r') as logFile:
+			return logFile.readlines()
+		return None			
+
+	def writeLogLinesToFile(self, lines):
+		with codecs.open(self.logFilePath(), 'w', 'utf-8') as logFile:
+			logFile.writelines(lines)
+			return True
+		return False
+
+	def finalizedBlock(self, content):
+		sub = (
+			self.vtag.lastTag(), 
+			self.vtag.lastBuild(), 
+			self.vtag.lastBuildDate(), 
+			content)
+		return ('### Version %s (%s)\n*%s*  \n%s\n\n' % sub)
+
+	def logFilePath(self):
+		return os.path.join(self.vtag.projPath, 'CHANGELOG.md')
+
+	def textFromDialog(self):
+		# create temp file
+		(fd, path) = tempfile.mkstemp()
+		# open temp file with vi	
+		editor = os.getenv('EDITOR', 'vi')
+		commandLine = '%s %s' % (editor, path)
+		subprocess.call(commandLine, shell=True)
+		# open edited tempfile
+		with codecs.open(path, 'r') as logFile:
+			return logFile.read()
+		return None
 
 
 
 def parseArgs():
 	parser = argparse.ArgumentParser(description='Tool for managing version labels in iOS projects')
-	parser.add_argument('-v', '--version', action='version', version='%(prog)s Version: 0.1')
+	parser.add_argument('-v', '--version', action='version', version='%(prog)s Version: 0.2')
 	parser.add_argument('-r', '--read', dest='read', action='store_true', default=False, help='Read current version tag')
 	parser.add_argument('-t', '--tag', dest='tag', help='New human version label')
 	parser.add_argument('-b', '--build', dest='build', help='New build number')
 	parser.add_argument('-ib', '--incrementBuild', dest='incrementBuild', action='store_true', default=False, help='Increase by one step build number')
+	parser.add_argument('-ul', '--updateChangelog', dest='updateChangelog', action='store_true', default=False, help='Show vi editor to add new release notes')
 	parser.add_argument('projPath', help='Path to folder where .xcodeproj file is located')
 	return parser.parse_args()
 
@@ -117,15 +172,18 @@ def changeVersion(args):
 	# new tag
 	if args.tag:
 		vtag.setTag(args.tag)
-		changelog.updateLog()
+		if args.updateChangelog:
+			changelog.updateLog()
 	# new build number
 	if args.build:
 		vtag.setBuild(args.build)
-		changelog.updateLog()
+		if args.updateChangelog:
+			changelog.updateLog()
 	# increment build number
 	if args.incrementBuild:
 		vtag.incrementBuild()
-		changelog.updateLog()
+		if args.updateChangelog:
+			changelog.updateLog()
 
 if __name__ == '__main__':
 	args = parseArgs()

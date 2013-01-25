@@ -120,9 +120,12 @@ class Changelog:
 		return result
 
 	def logFileLines(self):
-		with codecs.open(self.logFilePath(), 'r') as logFile:
-			return logFile.readlines()
-		return None			
+		try:
+			with codecs.open(self.logFilePath(), 'r') as logFile:
+				return logFile.readlines()
+		except IOError as error:
+			pass
+		return []			
 
 	def writeLogLinesToFile(self, lines):
 		with codecs.open(self.logFilePath(), 'w', 'utf-8') as logFile:
